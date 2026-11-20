@@ -6,6 +6,27 @@ Turns one long video into 5+ ready-to-post vertical clips with animated captions
 long video ──► download ──► transcribe (Whisper, GPU) ──► Claude picks best moments ──► cut + 9:16 + captions
 ```
 
+## How it works
+
+| Step | What happens | Tool |
+|---|---|---|
+| 1. Download | Downloads the video from a link (max 1080p), or uses a local file | yt-dlp |
+| 2. Transcribe | Writes down every word with exact timestamps, on the GPU if available. Saved as `transcript.json` | Whisper |
+| 3. Pick moments | Reads the transcript and picks the strongest 20–60 s moments, each starting on a hook and ending on a payoff. For each one it also writes a hook title, a post caption, hashtags and a score. Saved as `picks.json` | Claude API (`claude-opus-5-5`) |
+| 4. Render | Cuts each moment at sentence boundaries, makes it 9:16 vertical and adds the captions and hook. Output: 1080×1920, 30 fps | ffmpeg (NVIDIA encoder if available) |
+
+**What each clip looks like:**
+- Big bold captions, 3 words at a time, with the word being spoken **highlighted in yellow**. Caption lines never run across two sentences.
+- The **hook title** sits in a white bar at the top for the first 3 seconds.
+- Volume is evened out to social-media loudness (−14 LUFS).
+- Layout:
+  - `crop` (default): fills the screen by cropping the center of the frame. Best for podcasts and talking heads.
+  - `blur`: shows the whole frame over a blurred copy of itself. Best for gameplay, slides and wide shots.
+
+**`posting_sheet.txt`** lists, for every clip: file name, length, score (1–100), the hook text, a caption with hashtags ready to paste, and why the moment works. Post the highest-scoring clips first.
+
+See `sample/sample_clip.mp4` for an example. It uses a test pattern and a computer voice.
+
 ---
 
 ## 1. One-time setup (≈10 min)
@@ -43,6 +64,8 @@ long video ──► download ──► transcribe (Whisper, GPU) ──► Clau
 | 7 | You | Once a week, record views per clip in a sheet. Note which hooks and lengths win. |
 
 ## 3. Commands
+
+Open PowerShell in this folder, then run:
 
 ```powershell
 .\clip.ps1 "https://www.youtube.com/watch?v=XXXX"             # 5 AI-picked clips, center crop
