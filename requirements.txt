@@ -1,0 +1,7 @@
+anthropic>=2.10
+openai-whisper
+faster-whisper
+nvidia-cublas-cu12
+nvidia-cudnn-cu12==9.*
+# PyTorch with CUDA (install first):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
